@@ -5,8 +5,6 @@
 read service
 read -ra test <<< "$service"
 Arr=('0')
-#Remove_All=( ${test[@]/all/})
-#echo ${Remove_All[@]}
 
 for i in "${test[@]}"; do
     if [[ "${test[i]}" == "all" ]]; then
