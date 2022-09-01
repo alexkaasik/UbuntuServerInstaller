@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #read -r -s -p "A user sudo password need to be enter:" password
 
@@ -9,9 +9,9 @@ echo "all option add all services, but adding a number before/after all will not
 read service
 read -ra service <<< "$service"
 
-dhcp_call(){
+function dhcp_call(){
     sudo -S <<< $password apt install isc-dhcp-server
-    sudo -S <<< $password sed -i 's/INTERFACESv4=""/INTERFACESv4="enp0s8/' /etc/default/ isc-dhcp-server
+    sudo -S <<< $password sed -i 's/INTERFACESv4=""/INTERFACESv4="enp0s8/' /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp dhcp.txt /etc/dhcp/dhcpd.conf
 
