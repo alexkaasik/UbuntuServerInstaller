@@ -1,9 +1,23 @@
 #!/bin/sh
 
-#read -r -p "A user sudo password need to be enter:" password
+#read -r -s -p "A user sudo password need to be enter:" password
+
+column -t -s "," column.txt
+
+echo "all option add all services, but adding a number before/after all will not include that service"
 
 read service
 read -ra service <<< "$service"
+
+dhcp_call(){
+    sudo -S <<< $password apt install isc-dhcp-server
+    sudo -S <<< $password sed -i 's/INTERFACESv4=""/INTERFACESv4="enp0s8/' /etc/default/ isc-dhcp-server
+    sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
+    sudo -S <<< $password cp dhcp.txt /etc/dhcp/dhcpd.conf
+
+    sudo -S <<< $password systemctl restart isc-dhcp-server
+    sudo -S <<< $password systemctl status isc-dhcp-server
+}
 
 for i in "${service[@]}"; do
     if [[ "${service[i]}" == "all" ]]; then
@@ -21,25 +35,7 @@ done
 for i in "${Arr[@]}"; do
     case $i in
         0)
-            echo "$i is nat";;
-        1)
-            echo "$i is dhcp service";;
-        2)
-            echo "$i is dns service";;
-        3)
-            echo "$i is ntp service";;
-        4)
-            echo "$i is samba service";;
-        5)
-            echo "$i is iptables service";;
-        6)
-            echo "$i is apache service";;
-        7)
-            echo "$i is ngix service";;
-        8)
-            echo "$i is active directory service";;
-        9)
-            echo "$i is raid service";;
+            (dhcp_call1);;
         *)
             echo "$i no service is available";;
     esac
