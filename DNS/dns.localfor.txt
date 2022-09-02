@@ -1,5 +1,5 @@
 
-zone "kaasik.loc" {
+zone "@.loc" {
     type master;
-    file "/etc/bind/dns-zones/kaasik.loc"
-}
+    file "/etc/bind/dns-zones/@.loc";
+};

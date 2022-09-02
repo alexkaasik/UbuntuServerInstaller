@@ -5,7 +5,6 @@
 column -t -s "," column.txt
 
 echo "all option add all services, but adding a number before/after all will not include that service"
-
 read service
 read -ra service <<< "$service"
 
@@ -31,15 +30,20 @@ function dns_call(){
     sudo -S <<< $password enable bind9
     sudo -S <<< $password start bind9
 
-    sudo -S <<< $password dns_option.txt > /etc/bind/named.conf.option
-    
-    cat DNS/dns.localrevtxt | sudo tee -a /etc/bind/named.conf.local
-    cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
+    read -p "Inter a domain name" domain_name
+
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
+    cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
+    cat DNS/dns.localrevtxt | sudo tee -a /etc/bind/named.conf.local
+
+    sudo -S <<< $password sed -i /@.loc/$domain_name/ /etc/bind/named.conf.local
 
     sudo -S <<< $password mkdir -p /etc/bind/dns-zones 
-    sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/kaasik.loc
+    sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$domain_name
     sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/12.168.192-rev
+
+    sudo -S <<< $password sed -i /@.loc/$domain_name/ /etc/bind/dns-zones/$domain_name
+    sudo -S <<< $password sed -i /@.loc/$domain_name/ /etc/bind/dns-zones/12.168.192-rev
 
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 

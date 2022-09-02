@@ -1,3 +1,4 @@
+
 options {
 	direcrory "/var/cache/bind"
 

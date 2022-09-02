@@ -1,5 +1,5 @@
 $TTL 12000
-kaasik.loc.	IN	SOA	dns.kaasik.loc. masterhost.kaasik.loc (
+@.loc.	IN	SOA	dns.@.loc. masterhost.@.loc (
     4967	; Serial
     10000	; Refresh
     3600	; Retry
@@ -7,7 +7,7 @@ kaasik.loc.	IN	SOA	dns.kaasik.loc. masterhost.kaasik.loc (
     86400	; 1 day TTL neg
 )
 
-kaasik.loc.	IN	NS	dns.kaasik.loc.
+@.loc.	IN	NS	dns.@.loc.
 locolhost	IN	A	127.0.0.1
 dns		IN	A	192.168.12.1
 @		IN	A	192.168.12.1
