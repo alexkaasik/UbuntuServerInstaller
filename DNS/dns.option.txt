@@ -1,0 +1,9 @@
+options {
+	direcrory "/var/cache/bind"
+
+	forwarder {8.8.8.8;};
+	allow-query {127.0.0.1; 192.168.12.0/24;};
+
+	dnssec-validation auto;
+	litsen-on-v6 { any; };
+};

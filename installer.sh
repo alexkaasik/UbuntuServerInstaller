@@ -33,8 +33,9 @@ function dns_call(){
 
     sudo -S <<< $password dns_option.txt > /etc/bind/named.conf.option
     
+    sudo -S <<< $password DNS/dns.localrevtxt >> /etc/bind/named.conf.local
     sudo -S <<< $password DNS/dns.localfor.txt >> /etc/bind/named.conf.local
-#   sudo -S <<< $password DNS/dns.localrevtxt >> /etc/bind/named.conf.local
+    sudo -S <<< $password DNS/dns.option.txt > /etc/bind/named.conf.option
 
     sudo -S <<< $password mkdir -p /etc/bind/dns-zones 
     sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/kaasik.loc
@@ -43,7 +44,6 @@ function dns_call(){
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 
 }
-
 
 for i in "${service[@]}"; do
     if [[ "${service[i]}" == "all" ]]; then
