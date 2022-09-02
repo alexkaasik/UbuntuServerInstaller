@@ -36,14 +36,14 @@ function dns_call(){
     cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
     cat DNS/dns.localrevtxt | sudo tee -a /etc/bind/named.conf.local
 
-    sudo -S <<< $password sed -i /@.loc/$domain_name/ /etc/bind/named.conf.local
+    sudo -S <<< $password sed -i "s/@.loc/$domain_name/" /etc/bind/named.conf.local
 
     sudo -S <<< $password mkdir -p /etc/bind/dns-zones 
     sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$domain_name
     sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/12.168.192-rev
 
-    sudo -S <<< $password sed -i /@.loc/$domain_name/ /etc/bind/dns-zones/$domain_name
-    sudo -S <<< $password sed -i /@.loc/$domain_name/ /etc/bind/dns-zones/12.168.192-rev
+    sudo -S <<< $password sed -i "s/@.loc/$domain_name/" /etc/bind/dns-zones/$domain_name
+    sudo -S <<< $password sed -i "s/@.loc/$domain_name/" /etc/bind/dns-zones/12.168.192-rev
 
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 
