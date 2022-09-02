@@ -33,9 +33,9 @@ function dns_call(){
 
     sudo -S <<< $password dns_option.txt > /etc/bind/named.conf.option
     
-    sudo -S <<< $password DNS/dns.localrevtxt >> /etc/bind/named.conf.local
-    sudo -S <<< $password DNS/dns.localfor.txt >> /etc/bind/named.conf.local
-    sudo -S <<< $password DNS/dns.option.txt > /etc/bind/named.conf.option
+    cat DNS/dns.localrevtxt | sudo tee -a /etc/bind/named.conf.local
+    cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
+    cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
 
     sudo -S <<< $password mkdir -p /etc/bind/dns-zones 
     sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/kaasik.loc
