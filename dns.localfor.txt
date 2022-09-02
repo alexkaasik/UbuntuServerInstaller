@@ -1,0 +1,5 @@
+
+zone "kaasik.loc" {
+    type master;
+    file "/etc/bind/dns-zones/kaasik.loc"
+}

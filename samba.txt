@@ -1,0 +1,22 @@
+[Global]
+workgroup = WORKGROUP
+netbios name = samba.kaasik.loc
+
+dns proxy = no
+log file = /var/log/samba/log %u
+max log size = 1000
+
+unix password sync = yes
+Passwd program = /usr/bin/passwd %u
+Pam password change = yes
+Map to guest = bad user        
+Usershare allow guests = yes
+Access based share enum = yes
+
+[test]
+path = /mnt/smbfolder/
+browsable = yes
+writable = yes
+guest ok = no
+read only = no
+valid users = alex 

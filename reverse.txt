@@ -1,0 +1,11 @@
+$TTL 12000
+kaasik.loc.	IN	SOA	dns.kaasik.loc. masterhost.kaasik.loc (
+    4967	; Serial
+    10000	; Refresh
+    3600	; Retry
+    50000	; Expire
+    86400	; 1 day TTL neg
+)
+
+kaasik.loc.	IN	NS	dns.kaasik.loc.
+1		IN	PTR dns.kaasik.loc
