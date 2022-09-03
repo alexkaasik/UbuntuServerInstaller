@@ -27,8 +27,8 @@ function samba_call(){
 }
 function dns_call(){
     sudo -S <<< $password apt install -y bind9 dnsutils
-    sudo -S <<< $password enable bind9
-    sudo -S <<< $password start bind9
+    sudo -S <<< $password systemctl enable bind9
+    sudo -S <<< $password systemctl start bind9
 
     read -p "Inter a domain name" domain_name
 
@@ -42,8 +42,8 @@ function dns_call(){
     sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$domain_name
     sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/12.168.192-rev
 
-    sudo -S <<< $password sed -i "s/@.loc/$domain_name/" /etc/bind/dns-zones/$domain_name
-    sudo -S <<< $password sed -i "s/@.loc/$domain_name/" /etc/bind/dns-zones/12.168.192-rev
+    sudo -S <<< $password sed -i "s/@.loc/$domain_name/g" /etc/bind/dns-zones/$domain_name
+    sudo -S <<< $password sed -i "s/@.loc/$domain_name/g" /etc/bind/dns-zones/12.168.192-rev
 
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 
