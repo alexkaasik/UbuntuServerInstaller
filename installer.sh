@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#read -r -s -p "A user sudo password need to be enter:" password
+read -r -s -p "A user sudo password need to be enter:" password
 
 column -t -s "," column.txt
 
@@ -21,6 +21,27 @@ function samba_call(){
     sudo -S <<< $password apt install -y samba
     sudo -S <<< $password mv /etc/samba/smb.conf /etc/samba/smb.conf
     sudo -S <<< $password cp SAMBA/samba.txt /etc/samba/smb.conf
+
+    read -p "how many smb folder do you want?: " smb_folder
+
+    for ( i= 0; i < $smb_folder; i++ ); do
+        cat SAMBA/smb.txt | sudo tee -a /etc/samba/smb.conf
+        read -p "enter a name for a network drive" net
+        sudo -S <<< $password sed -i "s/test!/$net/g"  /etc/samba/smb.conf
+        read -p "yes or no" path
+        sudo -S <<< $password sed -i "s/path!/$path/g"  /etc/samba/smb.conf
+        read -p "yes or no" browser
+        sudo -S <<< $password sed -i "s/brow!/$browser/g"  /etc/samba/smb.conf
+        read -p "yes or no" write 
+        iudo -S <<< $password sed -i "s/writ!/$write/g"  /etc/samba/smb.conf
+        read -p "yes or no" guest
+        sudo -S <<< $password sed -i "s/guest!/$guest/g" /etc/samba/smb.conf
+        read -p "yes or no" red
+        sudo -S <<< $password sed -i "s/read!/$red/g"  /etc/samba/smb.conf
+        read -p "yes or no" who
+        sudo -S <<< $password sed -i "s/who!/$who/g"   /etc/samba/smb.conf
+    done
+
     sudo -S <<< $password Systemctl restart smbd
     sudo -S <<< $password Systemctl enable smbd
     sudo -S <<< $password Systemctl status smbd
@@ -34,7 +55,7 @@ function dns_call(){
     read -ra domain_name <<< "$domain_name"
 
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
-    cat DNS/dns.localrevtxt | sudo tee -a /etc/bind/named.conf.local
+    cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
     sudo -S <<< $password mkdir -p /etc/bind/dns-zones 
 
     for i in "${domain_name[@]}"; do

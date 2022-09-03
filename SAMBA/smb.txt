@@ -1,0 +1,7 @@
+[test!]
+path = path!
+browsable = brow!
+writable = writ!
+guest ok = guest!
+read only = read!
+valid users = who! 
