@@ -31,6 +31,7 @@ function dns_call(){
     sudo -S <<< $password systemctl start bind9
 
     read -p "Inter a domain name: " domain_name
+    read -ra domain_name <<< "$domain_name"
 
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
     cat DNS/dns.localrevtxt | sudo tee -a /etc/bind/named.conf.local
@@ -44,7 +45,7 @@ function dns_call(){
         sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i
 
         sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/12.168.192-rev
-        sudo -S <<< $password sed -i "s/@.loc/$domain_name[0]/g" /etc/bind/dns-zones/12.168.192-rev
+        sudo -S <<< $password sed -i "s/@.loc/${domain_name[0]}/g" /etc/bind/dns-zones/12.168.192-rev
     done
 
     sudo -S <<< $password systemctl restart bind9
