@@ -30,9 +30,9 @@ function samba_call(){
         yes_or_no="yes or no"
         cat SAMBA/smb.txt | sudo tee -a /etc/samba/smb.conf
         read -p "enter a name for a network drive: " net
-        sudo -S <<< $password sed -i "s/test!/'$net'/g"  /etc/samba/smb.conf
-        read -p "give a path to your folder: " path
-        sudo -S <<< $password sed -i "s/path!/'$path'/g"  /etc/samba/smb.conf
+        sudo -S <<< $password sed -i "s/test!/$net/g"  /etc/samba/smb.conf
+        read -p "give a path to your folder: /mnt/" path
+        sudo -S <<< $password sed -i "s/path!/$path/g"  /etc/samba/smb.conf
         read -p "$smb_txt browsable $yes_or_no: " browser
         sudo -S <<< $password sed -i "s/brow!/$browser/g"  /etc/samba/smb.conf
         read -p "$smb_txt writeable $yes_or_no: " write 
