@@ -10,6 +10,7 @@ read -ra service <<< "$service"
 
 function dhcp_call(){
     sudo -S <<< $password apt install -y isc-dhcp-server
+
     sudo -S <<< $password sed -i 's/INTERFACESv4=""/INTERFACESv4="enp0s8"/' /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
@@ -24,21 +25,23 @@ function samba_call(){
 
     read -p "how many smb folder do you want?: " smb_folder
 
-    for ( i= 0; i < $smb_folder; i++ ); do
+    for (( i= 0; i < $smb_folder; i++ )); do
+        smb_txt="should this smb folder be"
+        yes_or_no="yes or no"
         cat SAMBA/smb.txt | sudo tee -a /etc/samba/smb.conf
-        read -p "enter a name for a network drive" net
+        read -p "enter a name for a network drive: " net
         sudo -S <<< $password sed -i "s/test!/$net/g"  /etc/samba/smb.conf
-        read -p "yes or no" path
+        read -p "give a path to your folder: " path
         sudo -S <<< $password sed -i "s/path!/$path/g"  /etc/samba/smb.conf
-        read -p "yes or no" browser
+        read -p "$smb_txt browsable $yes_or_no: " browser
         sudo -S <<< $password sed -i "s/brow!/$browser/g"  /etc/samba/smb.conf
-        read -p "yes or no" write 
-        iudo -S <<< $password sed -i "s/writ!/$write/g"  /etc/samba/smb.conf
-        read -p "yes or no" guest
+        read -p "$smb_txt writeable $yes_or_no: " write 
+        sudo -S <<< $password sed -i "s/writ!/$write/g"  /etc/samba/smb.conf
+        read -p "$smb_txt guest to use this folder $yes_or_no: " guest
         sudo -S <<< $password sed -i "s/guest!/$guest/g" /etc/samba/smb.conf
-        read -p "yes or no" red
+        read -p "$yes_or_no: " red
         sudo -S <<< $password sed -i "s/read!/$red/g"  /etc/samba/smb.conf
-        read -p "yes or no" who
+        read -p "$smb_txt read only $yes_or_no: " who
         sudo -S <<< $password sed -i "s/who!/$who/g"   /etc/samba/smb.conf
     done
 
