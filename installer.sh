@@ -20,7 +20,7 @@ function dhcp_call(){
 }
 function samba_call(){
     sudo -S <<< $password apt install -y samba
-    sudo -S <<< $password mv /etc/samba/smb.conf /etc/samba/smb.conf
+    sudo -S <<< $password mv /etc/samba/smb.conf /etc/samba/smb.conf.backup
     sudo -S <<< $password cp SAMBA/samba.txt /etc/samba/smb.conf
 
     read -p "how many smb folder do you want?: " smb_folder
@@ -30,18 +30,18 @@ function samba_call(){
         yes_or_no="yes or no"
         cat SAMBA/smb.txt | sudo tee -a /etc/samba/smb.conf
         read -p "enter a name for a network drive: " net
-        sudo -S <<< $password sed -i "s/test!/$net/g"  /etc/samba/smb.conf
+        sudo -S <<< $password sed -i "s/test!/'$net'/g"  /etc/samba/smb.conf
         read -p "give a path to your folder: " path
-        sudo -S <<< $password sed -i "s/path!/$path/g"  /etc/samba/smb.conf
+        sudo -S <<< $password sed -i "s/path!/'$path'/g"  /etc/samba/smb.conf
         read -p "$smb_txt browsable $yes_or_no: " browser
         sudo -S <<< $password sed -i "s/brow!/$browser/g"  /etc/samba/smb.conf
         read -p "$smb_txt writeable $yes_or_no: " write 
         sudo -S <<< $password sed -i "s/writ!/$write/g"  /etc/samba/smb.conf
         read -p "$smb_txt guest to use this folder $yes_or_no: " guest
         sudo -S <<< $password sed -i "s/guest!/$guest/g" /etc/samba/smb.conf
-        read -p "$yes_or_no: " red
+        read -p "$smb_txt read only $yes_or_no: " red
         sudo -S <<< $password sed -i "s/read!/$red/g"  /etc/samba/smb.conf
-        read -p "$smb_txt read only $yes_or_no: " who
+        read -p "$smb_txt who should have access: " who
         sudo -S <<< $password sed -i "s/who!/$who/g"   /etc/samba/smb.conf
     done
 
