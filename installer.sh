@@ -30,20 +30,22 @@ function dns_call(){
     sudo -S <<< $password systemctl enable bind9
     sudo -S <<< $password systemctl start bind9
 
-    read -p "Inter a domain name" domain_name
+    read -p "Inter a domain name: " domain_name
 
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
-    cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
     cat DNS/dns.localrevtxt | sudo tee -a /etc/bind/named.conf.local
-
-    sudo -S <<< $password sed -i "s/@.loc/$domain_name/" /etc/bind/named.conf.local
-
     sudo -S <<< $password mkdir -p /etc/bind/dns-zones 
-    sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$domain_name
-    sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/12.168.192-rev
 
-    sudo -S <<< $password sed -i "s/@.loc/$domain_name/g" /etc/bind/dns-zones/$domain_name
-    sudo -S <<< $password sed -i "s/@.loc/$domain_name/g" /etc/bind/dns-zones/12.168.192-rev
+    for i in "${domain_name[@]}"; do
+        cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
+        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/named.conf.local
+
+        sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
+        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i
+
+        sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/12.168.192-rev
+        sudo -S <<< $password sed -i "s/@.loc/$domain_name[0]/g" /etc/bind/dns-zones/12.168.192-rev
+    done
 
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 
