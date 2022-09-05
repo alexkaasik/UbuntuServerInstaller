@@ -3,7 +3,7 @@ max-lease-time 7200;
 
 ddns-update-style none;
 
-subnet 192.168.12.0 netmask 255.255.255.0 {
+subnet subnet! netmask netmask! {
     range 192.168.12.2 192.168.12.254;
     option routers 192.168.12.1;
     option domain-name-servers 8.8.8.8;

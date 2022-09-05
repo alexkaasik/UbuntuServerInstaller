@@ -5,8 +5,12 @@ read -r -s -p "A user sudo password need to be enter:" password
 column -t -s "," column.txt
 
 echo "all option add all services, but adding a number before/after all will not include that service"
-read service
+read -p "pick a service" service
 read -ra service <<< "$service"
+
+read -p "ip and subnet: " network 
+network=$( echo $network | sed 's/\// /g')
+read -ra network <<< "$network"
 
 function dhcp_call(){
     sudo -S <<< $password apt install -y isc-dhcp-server
@@ -14,6 +18,10 @@ function dhcp_call(){
     sudo -S <<< $password sed -i 's/INTERFACESv4=""/INTERFACESv4="enp0s8"/' /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
+
+    sudo -S <<< $password sed -i 's/subnet!/${network[0]}/g' /etc/dhcp/dhcpd.conf
+    netmask=$( bash Scripts/subnet.sh ${network[1]})
+    sudo -S <<< $password sed -i 's/netmask!/$netmask/g' /etc/dhcp/dhcpd.conf
 
     sudo -S <<< $password systemctl restart isc-dhcp-server
     sudo -S <<< $password systemctl status isc-dhcp-server
@@ -26,12 +34,12 @@ function samba_call(){
     read -p "how many smb folder do you want?: " smb_folder
 
     for (( i= 0; i < $smb_folder; i++ )); do
-        smb_txt="should this smb folder be"
+        smb_txt="Should this smb folder be"
         yes_or_no="yes or no"
         cat SAMBA/smb.txt | sudo tee -a /etc/samba/smb.conf
-        read -p "enter a name for a network drive: " net
+        read -p "Enter a name for a network drive: " net
         sudo -S <<< $password sed -i "s/test!/$net/g"  /etc/samba/smb.conf
-        read -p "give a path to your folder: /mnt/" path
+        read -p "Give a path to your folder: /mnt" path
         sudo -S <<< $password sed -i "s/path!/$path/g"  /etc/samba/smb.conf
         read -p "$smb_txt browsable $yes_or_no: " browser
         sudo -S <<< $password sed -i "s/brow!/$browser/g"  /etc/samba/smb.conf
