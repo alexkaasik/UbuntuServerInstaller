@@ -5,7 +5,7 @@ read -r -s -p "A user sudo password need to be enter:" password
 column -t -s "," column.txt
 
 echo "all option add all services, but adding a number before/after all will not include that service"
-read -p "pick a service" service
+read -p "pick a service: " service
 read -ra service <<< "$service"
 
 read -p "ip and subnet: " network 
@@ -18,13 +18,13 @@ function dhcp_call(){
     echo $( ip addr )
     read -p "pick a interface: " interface
 
-    sudo -S <<< $password sed -i "s/INTERFACESv4=""/INTERFACESv4="$interface"/" /etc/default/isc-dhcp-server
+    sudo -S <<< $password sed -i s/INTERFACESv4=""/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
 
-    sudo -S <<< $password sed -i 's/subnet!/${network[0]}/g' /etc/dhcp/dhcpd.conf
+    sudo -S <<< $password sed -i s/subnet!/${network[0]}/g /etc/dhcp/dhcpd.conf
     netmask=$( bash Scripts/subnet.sh ${network[1]})
-    sudo -S <<< $password sed -i 's/netmask!/$netmask/g' /etc/dhcp/dhcpd.conf
+    sudo -S <<< $password sed -i s/netmask!/$netmask/g /etc/dhcp/dhcpd.conf
 
     sudo -S <<< $password systemctl restart isc-dhcp-server
     sudo -S <<< $password systemctl status isc-dhcp-server
@@ -56,9 +56,9 @@ function samba_call(){
         sudo -S <<< $password sed -i "s/who!/$who/g"   /etc/samba/smb.conf
     done
 
-    sudo -S <<< $password Systemctl restart smbd
-    sudo -S <<< $password Systemctl enable smbd
-    sudo -S <<< $password Systemctl status smbd
+    sudo -S <<< $password systemctl restart smbd
+    sudo -S <<< $password systemctl enable smbd
+    sudo -S <<< $password systemctl status smbd
 }
 function dns_call(){
     sudo -S <<< $password apt install -y bind9 dnsutils
@@ -85,6 +85,53 @@ function dns_call(){
 
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 
+}
+function web_call(){
+    read -p "pick one apache or nginx: " web_server
+
+    read -p "Inter a domain name: " domain_name
+    read -ra domain_name <<< "$domain_name"
+
+    for i in "${domain_name[@]}"; do    
+        sudo -S <<< $password mkdir -p /var/www/$i/
+        sudo -S <<< $password cp WEB/index.html /var/www/$i/index.html
+        sudo -S <<< $password sed -i s/site_name!/$i/g /var/www/$i/index.html
+    done    
+    if [ $web_server -eq "apache" ]; then
+        sudo -S <<< $password apt install -y apache2
+
+        for i in "${domain_name[@]}"; do
+            sudo -S <<< $password cp WEB/apache.txt /etc/apache2/sites-available/$i.conf
+            sudo -S <<< $password sed -i s/example!/$i/g /etc/apache2/sites-available/$i.conf 
+            sudo -S <<< $password a2ensite $i.conf 
+        done
+
+        sudo -S <<< $password a2dissite 000-default.conf 
+        sudo -S <<< $password systemctl restart apache2 
+        sudo -S <<< $password systemctl status apache2 
+
+    elif [ $web_server -eq "nginx" ]; then
+        sudo -S <<< $password apt install -y nginx
+        sudo -S <<< $password ufw app list
+        sudo -S <<< $password ufw allow 'Nginx HTTP'
+        sudo -S <<< $password ufw status
+
+        sudo -S <<< $password systemctl status nginx
+
+        for i in "${domain_name[@]}"; do
+            sudo -S <<< $password cp WEB/nginx /etc/nginx/sites-available/$i
+            sudo -S <<< $password sed -i s/example!/$i/g /etc/nginx/sites-available/$i
+            sudo -S <<< $password ln -s /etc/nginx/sites-available/$i /etc/nginx/sites-enabled/ 
+        done
+        
+        sudo -S <<< $password sed -i "/server_names/hash_bucket_size 64/s/#//g" /etc/nginx/nginx.conf
+        sudo -S <<< $password systemctl restart nginx 
+        sudo -S <<< $password systemctl status nginx 
+
+    else
+        echo unknown
+
+    fi
 }
 
 for i in "${service[@]}"; do
