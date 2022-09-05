@@ -15,7 +15,7 @@ read -ra network <<< "$network"
 function dhcp_call(){
     sudo -S <<< $password apt install -y isc-dhcp-server
     
-    echo $( ip addr )
+    echo "$( ip addr )"
     read -p "pick a interface: " interface
 
     sudo -S <<< $password sed -i s/INTERFACESv4=""/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
@@ -97,7 +97,7 @@ function web_call(){
         sudo -S <<< $password cp WEB/index.html /var/www/$i/index.html
         sudo -S <<< $password sed -i s/site_name!/$i/g /var/www/$i/index.html
     done    
-    if [ $web_server -eq "apache" ]; then
+    if [ $web_server == "apache" ]; then
         sudo -S <<< $password apt install -y apache2
 
         for i in "${domain_name[@]}"; do
@@ -110,7 +110,7 @@ function web_call(){
         sudo -S <<< $password systemctl restart apache2 
         sudo -S <<< $password systemctl status apache2 
 
-    elif [ $web_server -eq "nginx" ]; then
+    elif [ $web_server == "nginx" ]; then
         sudo -S <<< $password apt install -y nginx
         sudo -S <<< $password ufw app list
         sudo -S <<< $password ufw allow 'Nginx HTTP'
