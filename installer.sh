@@ -18,7 +18,8 @@ function dhcp_call(){
     echo "$( ip addr )"
     read -p "pick a interface: " interface
 
-    sudo -S <<< $password sed -i s/INTERFACESv4=""/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
+    #sudo -S <<< $password sed -i s/INTERFACESv4=""/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
+    sudo -S <<< $password sed -i s/'"''"'/$interface/g /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
 
