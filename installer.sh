@@ -123,9 +123,10 @@ function web_call(){
         sudo -S <<< $password systemctl status nginx
 
         for i in "${domain_name[@]}"; do
-            sudo -S <<< $password cp WEB/nginx /etc/nginx/sites-available/$i
+            sudo -S <<< $password cp WEB/nginx.txt /etc/nginx/sites-available/$i
             sudo -S <<< $password sed -i s/example!/$i/g /etc/nginx/sites-available/$i
-            sudo -S <<< $password ln -s /etc/nginx/sites-available/$i /etc/nginx/sites-enabled/ 
+            sudo -S <<< $password ln -s /etc/nginx/sites-available/$i /etc/nginx/sites-enabled/
+            sudo -S <<< $password nginx -t 
         done
         
         sudo -S <<< $password sed -i "/server_names/hash_bucket_size 64/s/#//g" /etc/nginx/nginx.conf
