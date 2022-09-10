@@ -14,12 +14,15 @@ read -ra network <<< "$network"
 
 function dhcp_call(){
     sudo -S <<< $password apt install -y isc-dhcp-server
+
+    sudo -S <<< $password systemctl enable isc-dhcp-server
+    sudo -S <<< $password systemctl start isc-dhcp-server
     
     echo "$( ip addr )"
     read -p "pick a interface: " interface
 
-    #sudo -S <<< $password sed -i s/INTERFACESv4=""/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
-    sudo -S <<< $password sed -i s/'"''"'/$interface/g /etc/default/isc-dhcp-server
+    #sudo -S <<< $password sed -i s/INTERFACESv4='""'/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
+    sudo -S <<< $password sed -i s/'""'/$interface/g /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
 
@@ -156,6 +159,8 @@ for i in "${Arr[@]}"; do
             (samba_call);;
         2)
             (dns_call);;
+        3)
+            (web_call);;
         *)
             echo "$i no service is available";;
     esac
