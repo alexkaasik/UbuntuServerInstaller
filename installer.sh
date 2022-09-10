@@ -15,8 +15,8 @@ read -ra network <<< "$network"
 function dhcp_call(){
     sudo -S <<< $password apt install -y isc-dhcp-server
 
-    sudo -S <<< $password systemctl enable isc-dhcp-server
     sudo -S <<< $password systemctl start isc-dhcp-server
+    sudo -S <<< $password systemctl enable isc-dhcp-server
     
     echo "$( ip addr )"
     read -p "pick a interface: " interface
