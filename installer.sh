@@ -96,7 +96,7 @@ function web_call(){
     read -p "pick one apache or nginx: " web_server
 
     read -p "Inter a domain name: " -ra domain_name
-
+    
     for i in "${domain_name[@]}"; do    
         sudo -S <<< $password mkdir -p /var/www/$i/
         sudo -S <<< $password cp WEB/index.html /var/www/$i/index.html
@@ -140,6 +140,7 @@ function web_call(){
     fi
 }
 
+# A filters to remove what number after/before adding option all
 for i in "${service[@]}"; do
     if [[ "${service[i]}" == "all" ]]; then
         Arr=('0' '1' '2' '3' '4' '5' '6' '7' '8' '9')
@@ -152,7 +153,7 @@ for i in "${service[@]}"; do
         Arr=( ${service[@]} )
     fi
 done
-
+# Checks what service to call
 for i in "${Arr[@]}"; do
     case $i in
         0)
