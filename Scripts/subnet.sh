@@ -7,6 +7,7 @@ octet1=0
 octet2=0
 octet3=0
 octet4=0
+
 if [[ $bit -ge 8 ]]; then
 	#echo "first octet filled"
 	octet=$((octet+1))

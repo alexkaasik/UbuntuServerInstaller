@@ -1,17 +1,13 @@
 #!/bin/bash
 
 read -r -s -p "A user sudo password need to be enter:" password
-
+echo ""
 column -t -s "," column.txt
 
 echo "all option add all services, but adding a number before/after all will not include that service"
-read -p "pick a service: " service
-read -ra service <<< "$service"
+read -p "pick a service: " -ra service
 
-read -p "ip and subnet: " network 
-network=$( echo $network | sed 's/\// /g')
-read -ra network <<< "$network"
-
+# Function Installing DHCP
 function dhcp_call(){
     sudo -S <<< $password apt install -y isc-dhcp-server
 
@@ -21,8 +17,12 @@ function dhcp_call(){
     echo "$( ip addr )"
     read -p "pick a interface: " interface
 
-    #sudo -S <<< $password sed -i s/INTERFACESv4='""'/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
-    sudo -S <<< $password sed -i s/'""'/$interface/g /etc/default/isc-dhcp-server
+    read -p "ip and subnet: " network 
+    network=$( echo $network | sed 's/\// /g')
+    read -ra network <<< "$network"
+
+    #sudo -S <<< $password sed -i s/INTERFACESv4=\"\"/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
+    sudo -S <<< $password sed -i s/\"\"/\"$interface\"/g /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
 
@@ -33,6 +33,7 @@ function dhcp_call(){
     sudo -S <<< $password systemctl restart isc-dhcp-server
     sudo -S <<< $password systemctl status isc-dhcp-server
 }
+# Function Installing Samba
 function samba_call(){
     sudo -S <<< $password apt install -y samba
     sudo -S <<< $password mv /etc/samba/smb.conf /etc/samba/smb.conf.backup
@@ -64,13 +65,13 @@ function samba_call(){
     sudo -S <<< $password systemctl enable smbd
     sudo -S <<< $password systemctl status smbd
 }
+# Function Installing DNS 
 function dns_call(){
     sudo -S <<< $password apt install -y bind9 dnsutils
     sudo -S <<< $password systemctl enable bind9
     sudo -S <<< $password systemctl start bind9
 
-    read -p "Inter a domain name: " domain_name
-    read -ra domain_name <<< "$domain_name"
+    read -p "Inter a domain name: " -ra domain_name
 
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
     cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
@@ -90,11 +91,11 @@ function dns_call(){
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 
 }
+# Function Installing Web-server like apache or nginx
 function web_call(){
     read -p "pick one apache or nginx: " web_server
 
-    read -p "Inter a domain name: " domain_name
-    read -ra domain_name <<< "$domain_name"
+    read -p "Inter a domain name: " -ra domain_name
 
     for i in "${domain_name[@]}"; do    
         sudo -S <<< $password mkdir -p /var/www/$i/

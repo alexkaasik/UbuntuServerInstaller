@@ -23,9 +23,9 @@ chmod +x installer.sh
 The program will ask you of sudo password
 just inter it
 
-[insert an image]
+<img src="assets/unknown.png"/>
 
 It will ask what service to install and deploy.
 if you inter it wilt all, then it will download all service and deployes them all, and you can pick what to install and deploy.
 if you add option all and a number it will exloud that what service
-[insert an image]
+<img src="assets/unknown.png"/>
