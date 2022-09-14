@@ -13,7 +13,9 @@ function dhcp_call(){
 
     sudo -S <<< $password systemctl start isc-dhcp-server
     sudo -S <<< $password systemctl enable isc-dhcp-server
-    
+
+    clear
+
     echo "$( ip addr )"
     read -p "pick a interface: " interface
 
@@ -32,12 +34,16 @@ function dhcp_call(){
 
     sudo -S <<< $password systemctl restart isc-dhcp-server
     sudo -S <<< $password systemctl status isc-dhcp-server
+    sleep 5
+    clear
 }
 # Function Installing Samba
 function samba_call(){
     sudo -S <<< $password apt install -y samba
     sudo -S <<< $password mv /etc/samba/smb.conf /etc/samba/smb.conf.backup
     sudo -S <<< $password cp SAMBA/samba.txt /etc/samba/smb.conf
+
+    clear
 
     read -p "how many smb folder do you want?: " smb_folder
 
@@ -59,17 +65,23 @@ function samba_call(){
         sudo -S <<< $password sed -i "s/read!/$red/g"  /etc/samba/smb.conf
         read -p "$smb_txt who should have access adding if name has @ make it a group or without makes a user: " who
         sudo -S <<< $password sed -i "s/who!/$who/g"   /etc/samba/smb.conf
+        clear
     done
 
     sudo -S <<< $password systemctl restart smbd
     sudo -S <<< $password systemctl enable smbd
     sudo -S <<< $password systemctl status smbd
+
+    sleep 5
+    clear
 }
 # Function Installing DNS 
 function dns_call(){
     sudo -S <<< $password apt install -y bind9 dnsutils
     sudo -S <<< $password systemctl enable bind9
     sudo -S <<< $password systemctl start bind9
+
+    clear
 
     read -p "Inter a domain name: " -ra domain_name
 
@@ -113,7 +125,10 @@ function web_call(){
 
         sudo -S <<< $password a2dissite 000-default.conf 
         sudo -S <<< $password systemctl restart apache2 
-        sudo -S <<< $password systemctl status apache2 
+        sudo -S <<< $password systemctl status apache2
+
+        sleep 5
+        clear
 
     elif [ $web_server == "nginx" ]; then
         sudo -S <<< $password apt install -y nginx
@@ -133,6 +148,9 @@ function web_call(){
         sudo -S <<< $password sed -i "/server_names/hash_bucket_size 64/s/#//g" /etc/nginx/nginx.conf
         sudo -S <<< $password systemctl restart nginx 
         sudo -S <<< $password systemctl status nginx 
+
+        sleep 5
+        clear
 
     else
         echo unknown
