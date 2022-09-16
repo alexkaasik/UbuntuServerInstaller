@@ -28,10 +28,30 @@ function dhcp_call(){
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
 
-    sudo -S <<< $password sed -i s/subnet!/${network[0]}/g /etc/dhcp/dhcpd.conf
+    network_host=$( bash Scripts/network.sh ${network[1]} ${network[0]})
+    sudo -S <<< $password sed -i s/subnet!/$network_host/g /etc/dhcp/dhcpd.conf
+
     netmask=$( bash Scripts/subnet.sh ${network[1]})
     sudo -S <<< $password sed -i s/netmask!/$netmask/g /etc/dhcp/dhcpd.conf
 
+    maxhost=$( bash Scripts/maxhost.sh ${network[1]} ${network[0]} )
+    sudo -S <<< $password sed -i s/maxhost!/$maxhost/g /etc/dhcp/dhcpd.conf
+
+    minhost=$( bash Scripts/minhost.sh ${network[1]} ${network[0]} )
+    sudo -S <<< $password sed -i s/minhost!/$minhost/g /etc/dhcp/dhcpd.conf
+
+    broadcast-address=$( bash Scripts/broadcast.sh ${network[1]} ${network[0]} )
+    sudo -S <<< $password sed -i s/broadcast-address!/$broadcast-address/g /etc/dhcp/dhcpd.conf
+
+    read -p "Inter a default get a for DHCP: " router_ip
+    sudo -S <<< $password sed -i s/router_ip!/$router_ip/g /etc/dhcp/dhcpd.conf  
+
+    read -p "Inter a DNS servers get a for DHCP: " dns_ip
+    sudo -S <<< $password sed -i s/dns_ip!/$dns_ip/g /etc/dhcp/dhcpd.conf 
+  
+    read -p "Inter a domain name for for DHCP: " domain_name
+    sudo -S <<< $password sed -i s/domain_name!/$domain_name/g /etc/dhcp/dhcpd.conf 
+  
     sudo -S <<< $password systemctl restart isc-dhcp-server
     sudo -S <<< $password systemctl status isc-dhcp-server
     sleep 5
