@@ -40,10 +40,10 @@ function dhcp_call(){
     minhost=$( bash Scripts/minhost.sh ${network[1]} ${network[0]} )
     sudo -S <<< $password sed -i s/minhost!/$minhost/g /etc/dhcp/dhcpd.conf
 
-    broadcast-address=$( bash Scripts/broadcast.sh ${network[1]} ${network[0]} )
-    sudo -S <<< $password sed -i s/broadcast-address!/$broadcast-address/g /etc/dhcp/dhcpd.conf
+    broadcast_address=$( bash Scripts/broadcast.sh ${network[1]} ${network[0]} )
+    sudo -S <<< $password sed -i s/broadcast-address!/$broadcast_address/g /etc/dhcp/dhcpd.conf
 
-    read -p "Inter a default get a for DHCP: " router_ip
+    read -p "Inter a default getway a for DHCP: " router_ip
     sudo -S <<< $password sed -i s/router_ip!/$router_ip/g /etc/dhcp/dhcpd.conf  
 
     read -p "Inter a DNS servers get a for DHCP: " dns_ip
