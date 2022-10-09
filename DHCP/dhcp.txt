@@ -7,7 +7,7 @@ subnet subnet! netmask netmask! {
     range minhost! maxhost!;
     option routers router_ip!;
     option domain-name-servers dns_ip!;
-    option domain_name "domain_name!";
-    option broadcast-address broadcast-address!  
+    option domain-name "domain_name!";
+    option broadcast-address broadcast-address!;
     option subnet-mask netmask!
 }

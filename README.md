@@ -26,6 +26,7 @@ Just inter it
 <img src="assets/unknown.png"/>
 
 It will ask what service to install and deploy.
+<img src="assets/unknown.png"/>
 If you inter it wilt all, then it will download all service and deployes them all, and you can pick what to install and deploy.
 If you add option all and a number it will exloud that what service
 <img src="assets/unknown.png"/>

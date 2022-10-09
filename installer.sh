@@ -1,11 +1,11 @@
 #!/bin/bash
 
-read -r -s -p "A user sudo password need to be enter:" password
+read -r -s -p "Enter a sudo password: " password
 echo ""
 column -t -s "," column.txt
 
-echo "all option add all services, but adding a number before/after all will not include that service"
-read -p "pick a service: " -ra service
+echo "The all option add all services, but adding a number before/after all will not include that service"
+read -p "Pick a service: " -ra service
 
 # Function Installing DHCP
 function dhcp_call(){
@@ -17,13 +17,12 @@ function dhcp_call(){
     clear
 
     echo "$( ip addr )"
-    read -p "pick a interface: " interface
+    read -p "Pick a interface: " interface
 
-    read -p "ip and subnet: " network 
+    read -p "Enter a IP address and MAC address: " network 
     network=$( echo $network | sed 's/\// /g')
     read -ra network <<< "$network"
 
-    #sudo -S <<< $password sed -i s/INTERFACESv4=\"\"/INTERFACESv4="$interface"/g /etc/default/isc-dhcp-server
     sudo -S <<< $password sed -i s/\"\"/\"$interface\"/g /etc/default/isc-dhcp-server
     sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
     sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
@@ -43,18 +42,20 @@ function dhcp_call(){
     broadcast_address=$( bash Scripts/broadcast.sh ${network[1]} ${network[0]} )
     sudo -S <<< $password sed -i s/broadcast-address!/$broadcast_address/g /etc/dhcp/dhcpd.conf
 
-    read -p "Inter a default getway a for DHCP: " router_ip
+    read -p "Enter a Default-Getway address: " router_ip
     sudo -S <<< $password sed -i s/router_ip!/$router_ip/g /etc/dhcp/dhcpd.conf  
 
-    read -p "Inter a DNS servers get a for DHCP: " dns_ip
+    read -p "Enter a DNS servers address: " dns_ip
     sudo -S <<< $password sed -i s/dns_ip!/$dns_ip/g /etc/dhcp/dhcpd.conf 
   
-    read -p "Inter a domain name for for DHCP: " domain_name
+    read -p "Enter a domain name: " domain_name
     sudo -S <<< $password sed -i s/domain_name!/$domain_name/g /etc/dhcp/dhcpd.conf 
   
     sudo -S <<< $password systemctl restart isc-dhcp-server
     sudo -S <<< $password systemctl status isc-dhcp-server
+    
     sleep 5
+    
     clear
 }
 # Function Installing Samba
@@ -65,23 +66,22 @@ function samba_call(){
 
     clear
 
-    read -p "how many smb folder do you want?: " smb_folder
+    read -p "How many smb-folder do you want?: " smb_folder
 
     for (( i= 0; i < $smb_folder; i++ )); do
         smb_txt="Should this smb folder be"
-        yes_or_no="yes or no"
         cat SAMBA/smb.txt | sudo tee -a /etc/samba/smb.conf
         read -p "Enter a name for a network drive: " net
         sudo -S <<< $password sed -i "s/test!/$net/g"  /etc/samba/smb.conf
         read -p "Give a path to your folder: /mnt/" path
         sudo -S <<< $password sed -i "s/path!/$path/g"  /etc/samba/smb.conf
-        read -p "$smb_txt browsable $yes_or_no: " browser
+        read -p "$smb_txt browsable yes or no: " browser
         sudo -S <<< $password sed -i "s/brow!/$browser/g"  /etc/samba/smb.conf
-        read -p "$smb_txt writeable $yes_or_no: " write 
+        read -p "$smb_txt writeable yes or no: " write 
         sudo -S <<< $password sed -i "s/writ!/$write/g"  /etc/samba/smb.conf
         read -p "$smb_txt guest to use this folder $yes_or_no: " guest
         sudo -S <<< $password sed -i "s/guest!/$guest/g" /etc/samba/smb.conf
-        read -p "$smb_txt read only $yes_or_no: " red
+        read -p "$smb_txt read only yes or no: " red
         sudo -S <<< $password sed -i "s/read!/$red/g"  /etc/samba/smb.conf
         read -p "$smb_txt who should have access adding if name has @ make it a group or without makes a user: " who
         sudo -S <<< $password sed -i "s/who!/$who/g"   /etc/samba/smb.conf
@@ -103,7 +103,7 @@ function dns_call(){
 
     clear
 
-    read -p "Inter a domain name: " -ra domain_name
+    read -p "Enter a domain name/s: " -ra domain_name
 
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
     cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
@@ -177,7 +177,6 @@ function web_call(){
 
     fi
 }
-
 # A filters to remove what number after/before adding option all
 for i in "${service[@]}"; do
     if [[ "${service[i]}" == "all" ]]; then
