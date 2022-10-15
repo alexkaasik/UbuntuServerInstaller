@@ -1,5 +1,5 @@
 
-zone "12.168.192.in-addr.arpa" IN {
+zone "localrev!.in-addr.arpa" IN {
     type master;
-    file "/etc/bind/dns-zones/12.168.192-rev";
+    file "/etc/bind/dns-zones/localrev!-rev";
 };

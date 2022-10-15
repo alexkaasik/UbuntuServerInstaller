@@ -9,5 +9,5 @@ subnet subnet! netmask netmask! {
     option domain-name-servers dns_ip!;
     option domain-name "domain_name!";
     option broadcast-address broadcast-address!;
-    option subnet-mask netmask!
+    option subnet-mask netmask!;
 }

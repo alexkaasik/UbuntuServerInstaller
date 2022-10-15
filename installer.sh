@@ -101,13 +101,23 @@ function dns_call(){
     sudo -S <<< $password systemctl enable bind9
     sudo -S <<< $password systemctl start bind9
 
+    sudo -S <<< $password mkdir -p /etc/bind/dns-zones
+
     clear
 
     read -p "Enter a domain name/s: " -ra domain_name
 
+    reverse_loc=$( bash Scripts/network.sh ${network[0]})
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
+
+    read -p "Enter a IP address and mask who allowed to use querys: " network 
+    sudo -S <<< $password sed -i "s/ip_address!/$network/g" /etc/bind/named.conf.option
+    read -p "Enter a forwarding dns server address: " dns_forward
+    sudo -S <<< $password sed -i "s/dns_forward!/$dns_forward/g" /etc/bind/named.conf.option
+    
     cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
-    sudo -S <<< $password mkdir -p /etc/bind/dns-zones 
+    reverse_loc=$( bash Scripts/network.sh ${network[0]})
+    sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
 
     for i in "${domain_name[@]}"; do
         cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
@@ -115,9 +125,12 @@ function dns_call(){
 
         sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
         sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i
-
-        sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/12.168.192-rev
-        sudo -S <<< $password sed -i "s/@.loc/${domain_name[0]}/g" /etc/bind/dns-zones/12.168.192-rev
+        
+        if [[ ! -e /etc/bind/dns-zones/$reverse_loc-rev ]]
+            sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/$reverse_loc-rev
+            sudo -S <<< $password sed -i "s/@.loc/${domain_name[0]}/g" /etc/bind/dns-zones/$reverse_loc-rev
+            sudo -S <<< $password sed -i s/localrev!/$reverse_loc/g /etc/bind/dns-zones/$reverse_loc-rev
+        fi
     done
 
     sudo -S <<< $password systemctl restart bind9
