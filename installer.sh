@@ -20,7 +20,7 @@ function dhcp_call(){
     read -p "Pick a interface: " interface
 
     read -p "Enter a IP address and MAC address: " network 
-    network=$( echo $network | sed 's/\// /g')
+    network=$( echo $network | sed -i 's/\// /g')
     read -ra network <<< "$network"
 
     sudo -S <<< $password sed -i s/\"\"/\"$interface\"/g /etc/default/isc-dhcp-server
@@ -107,7 +107,6 @@ function dns_call(){
 
     read -p "Enter a domain name/s: " -ra domain_name
 
-    reverse_loc=$( bash Scripts/network.sh ${network[0]})
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
 
     read -p "Enter a IP address and mask who allowed to use querys: " network 
@@ -115,8 +114,11 @@ function dns_call(){
     read -p "Enter a forwarding dns server address: " dns_forward
     sudo -S <<< $password sed -i "s/dns_forward!/$dns_forward/g" /etc/bind/named.conf.option
     
+    network=$( echo $network | sed -i 's/\// /g')
+    read -ra network <<< "$network"
+
     cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
-    reverse_loc=$( bash Scripts/network.sh ${network[0]})
+    reverse_loc=$( bash Scripts/reverse.sh ${network[0]})
     sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
 
     for i in "${domain_name[@]}"; do
@@ -126,7 +128,7 @@ function dns_call(){
         sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
         sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i
         
-        if [[ ! -e /etc/bind/dns-zones/$reverse_loc-rev ]]
+        if [[ ! -e "/etc/bind/dns-zones/$reverse_loc-rev" ]]; then
             sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/$reverse_loc-rev
             sudo -S <<< $password sed -i "s/@.loc/${domain_name[0]}/g" /etc/bind/dns-zones/$reverse_loc-rev
             sudo -S <<< $password sed -i s/localrev!/$reverse_loc/g /etc/bind/dns-zones/$reverse_loc-rev
