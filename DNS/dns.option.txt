@@ -3,7 +3,7 @@ options {
 	direcrory "/var/cache/bind"
 
 	forwarder {dns_forward!;};
-	allow-query {127.0.0.1; ip_address;};
+	allow-query {127.0.0.1; ip_address!;};
 
 	dnssec-validation auto;
 	litsen-on-v6 { any; };

@@ -19,8 +19,8 @@ function dhcp_call(){
     echo "$( ip addr )"
     read -p "Pick a interface: " interface
 
-    read -p "Enter a IP address and MAC address: " network 
-    network=$( echo $network | sed -i 's/\// /g')
+    read -p "Enter a IP address and mask: " network 
+    network=$( echo $network | sed 's/\// /g')
     read -ra network <<< "$network"
 
     sudo -S <<< $password sed -i s/\"\"/\"$interface\"/g /etc/default/isc-dhcp-server
@@ -105,8 +105,6 @@ function dns_call(){
 
     clear
 
-    read -p "Enter a domain name/s: " -ra domain_name
-
     cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
 
     read -p "Enter a IP address and mask who allowed to use querys: " network 
@@ -114,12 +112,14 @@ function dns_call(){
     read -p "Enter a forwarding dns server address: " dns_forward
     sudo -S <<< $password sed -i "s/dns_forward!/$dns_forward/g" /etc/bind/named.conf.option
     
-    network=$( echo $network | sed -i 's/\// /g')
+    network=$( echo $network | sed 's/\// /g')
     read -ra network <<< "$network"
 
     cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
     reverse_loc=$( bash Scripts/reverse.sh ${network[0]})
     sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
+
+    read -p "Enter a domain name/s: " -ra domain_name
 
     for i in "${domain_name[@]}"; do
         cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
@@ -171,8 +171,6 @@ function web_call(){
         sudo -S <<< $password ufw allow 'Nginx HTTP'
         sudo -S <<< $password ufw status
 
-        sudo -S <<< $password systemctl status nginx
-
         for i in "${domain_name[@]}"; do
             sudo -S <<< $password cp WEB/nginx.txt /etc/nginx/sites-available/$i
             sudo -S <<< $password sed -i s/example!/$i/g /etc/nginx/sites-available/$i
@@ -189,7 +187,6 @@ function web_call(){
 
     else
         echo unknown
-
     fi
 }
 # A filters to remove what number after/before adding option all
