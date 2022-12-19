@@ -105,12 +105,12 @@ function dns_call(){
 
     clear
 
-    cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.option
+    cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.options
 
     read -p "Enter a IP address and mask who allowed to use querys: " network 
-    sudo -S <<< $password sed -i "s/ip_address!/$network/g" /etc/bind/named.conf.option
+    sudo -S <<< $password sed -i "s/ip_address!/$network/g" /etc/bind/named.conf.options
     read -p "Enter a forwarding dns server address: " dns_forward
-    sudo -S <<< $password sed -i "s/dns_forward!/$dns_forward/g" /etc/bind/named.conf.option
+    sudo -S <<< $password sed -i "s/dns_forward!/$dns_forward/g" /etc/bind/named.conf.options
     
     network=$( echo $network | sed 's/\// /g')
     read -ra network <<< "$network"
