@@ -130,9 +130,7 @@ function dns_call(){
 
     while [[ $pick != 'quit' ]]; do
         read -p "Do you want a domain, a record or quit?: " pick
-        if [[ $pick == 'quit' ]]; then
-            break
-        elif [[ $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
+        if [[ $pick != 'quit' && $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
             if [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then echo "you don't a domain.";echo;fi
         	read -p "Enter a domain name/s: " -ra domain_name
 
