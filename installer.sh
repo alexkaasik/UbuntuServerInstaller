@@ -128,12 +128,12 @@ function dns_call(){
         sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
     fi
 
-    while true; do
+    while [[ $pick != 'quit' ]]; do
         read -p "Do you want a domain, a record or quit?: " pick
         if [[ $pick == 'quit' ]]; then
             break
         elif [[ $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
-            if [[ $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then echo "you don't a domain.";echo;fi
+            if [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then echo "you don't a domain.";echo;fi
         	read -p "Enter a domain name/s: " -ra domain_name
 
            	for i in "${domain_name[@]}"; do
