@@ -24,12 +24,15 @@ function dhcp_call(){
         read -p "Pick a interface: " interface
         sudo -S <<< $password sed -i s/\"\"/\"$interface\"/g /etc/default/isc-dhcp-server
         sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
-        sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
+        sudo -S <<< $password cp DHCP/dhcp1.txt /etc/dhcp/dhcpd.conf
     fi
 
     read -p "Enter a IP address and mask: " network 
     network=$( echo $network | sed 's/\// /g')
     read -ra network <<< "$network"
+
+
+    cat DHCP/dhcp.txt | sudo -S <<< $password tee -a /etc/dhcp/dhcpd.conf
 
     network_host=$( bash Scripts/network.sh ${network[1]} ${network[0]})
     sudo -S <<< $password sed -i s/subnet!/$network_host/g /etc/dhcp/dhcpd.conf
@@ -155,7 +158,7 @@ function dns_call(){
     
         		read -p "Do you want add a other record: " continue
         	done
-        else; echo "Error you enter invalid option"; fi
+        else echo "Error you enter invalid option"; fi
     done
 
     if [[ ! -e "/etc/bind/dns-zones/$reverse_loc-rev" ]]; then

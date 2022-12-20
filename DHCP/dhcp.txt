@@ -1,8 +1,4 @@
-default-lease-time 600;
-max-lease-time 7200;
-
-ddns-update-style none;
-
+  
 subnet subnet! netmask netmask! {
     range minhost! maxhost!;
     option routers router_ip!;
