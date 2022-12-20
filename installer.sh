@@ -12,6 +12,7 @@ read -p "Pick a service: " -ra service
 
 # Function Installing DHCP
 function dhcp_call(){
+    # Check if dhcp service is installed
     if [[ $(ls /etc | grep dhcp | wc -l ) -eq 0 ]]; then
     #if [[ $(systemctl is-active isc-dhcp-server ) == "inactive" ]]; then
         sudo -S <<< $password apt install -y isc-dhcp-server
@@ -61,6 +62,7 @@ function dhcp_call(){
 }
 # Function Installing Samba
 function samba_call(){
+    # Check if smb share service is installed
     if [[ $(ls /etc | grep samba | wc -l) -eq 0 ]]; then
     #if [[ (systemctl is-active smbd ) == "inactive"]]; then
         sudo -S <<< $password apt install -y samba
@@ -125,20 +127,23 @@ function dns_call(){
 
     while [[ $pick != 'quit' ]]; do
         read -p "Do you want a domain, a record or quit?: " pick
-        if [[ $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
+        if [[ $pick == 'quit' ]]; then
+            break
+        elif [[ $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
+            if [[ $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then echo "you don't a domain.";echo;fi
         	read -p "Enter a domain name/s: " -ra domain_name
 
            	for i in "${domain_name[@]}"; do
-                	cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
+                	cat DNS/dns .localfor.txt | sudo tee -a /etc/bind/named.conf.local
         	        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/named.conf.local
                 	sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
         	        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i      
         	done
-        elif [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -ne 0]]; then
+        elif [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -ne 0 ]]; then
         	ls /etc/bind/dns-zones
         	read -p "Enter a domain name/s: " domain_name
         	while [[ $continue != no ]];do
-        		cat DNS/record.txt | sudo -S <<< $password tee -a /etc/dns-zones/$domain_name
+        		cat DNS/record.txt | sudo -S <<< $password tee -a /etc/bind/dns-zones/$domain_name
 
         		# Entering a sub-domain record
         		read -p "Enter a domain name: " dnsname
