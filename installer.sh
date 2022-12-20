@@ -128,10 +128,14 @@ function dns_call(){
         sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
     fi
 
-    while [[ $pick != 'quit' ]]; do
+    while true; do
         read -p "Do you want a domain, a record or quit?: " pick
-        if [[ $pick != 'quit' && $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
-            if [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then echo "you don't a domain.";echo;fi
+        if [[ $pick == 'quit' ]]; then
+            break
+        elif [[ $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
+            
+            if [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then echo "you don't a domain."; fi
+
         	read -p "Enter a domain name/s: " -ra domain_name
 
            	for i in "${domain_name[@]}"; do
@@ -140,6 +144,7 @@ function dns_call(){
                 	sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
         	        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i      
         	done
+
         elif [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -ne 0 ]]; then
         	ls /etc/bind/dns-zones
         	read -p "Enter a domain name/s: " domain_name
@@ -156,15 +161,15 @@ function dns_call(){
     
         		read -p "Do you want add a other record: " continue
         	done
-        else echo "Error you enter invalid option"; fi
+        else echo "Error you enter invalid option" ; fi
     done
 
-    if [[ ! -e "/etc/bind/dns-zones/$reverse_loc-rev" ]]; then
+    if [[ $pick != 'quit' && ! -e "/etc/bind/dns-zones/$reverse_loc-rev" ]]; then
         ls /etc/bind/dns-zones
     	read -p "Enter a domain name/s: " domain_name
     	sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/$reverse_loc-rev
-            sudo -S <<< $password sed -i "s/@.loc/$domain_name/g" /etc/bind/dns-zones/$reverse_loc-rev
-            sudo -S <<< $password sed -i s/localrev!/$reverse_loc/g /etc/bind/dns-zones/$reverse_loc-rev
+        sudo -S <<< $password sed -i "s/@.loc/$domain_name/g" /etc/bind/dns-zones/$reverse_loc-rev
+        sudo -S <<< $password sed -i s/localrev!/$reverse_loc/g /etc/bind/dns-zones/$reverse_loc-rev
     fi
 
     sudo -S <<< $password systemctl restart bind9
