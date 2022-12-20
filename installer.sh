@@ -125,7 +125,7 @@ function dns_call(){
         sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
     fi
 
-    while [[ $pick != 'quit' ]]; do
+    while true; do
         read -p "Do you want a domain, a record or quit?: " pick
         if [[ $pick == 'quit' ]]; then
             break
@@ -134,7 +134,7 @@ function dns_call(){
         	read -p "Enter a domain name/s: " -ra domain_name
 
            	for i in "${domain_name[@]}"; do
-                	cat DNS/dns .localfor.txt | sudo tee -a /etc/bind/named.conf.local
+                	cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
         	        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/named.conf.local
                 	sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
         	        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i      
@@ -155,9 +155,7 @@ function dns_call(){
     
         		read -p "Do you want add a other record: " continue
         	done
-        else 
-            echo "Error you enter invalid option"
-        fi
+        else; echo "Error you enter invalid option"; fi
     done
 
     if [[ ! -e "/etc/bind/dns-zones/$reverse_loc-rev" ]]; then
