@@ -9,5 +9,3 @@ $TTL 12000
 
 @.loc.	IN	NS	dns.@.loc.
 localhost	IN	A	127.0.0.1
-dns		IN	A	192.168.12.1
-@		IN	A	192.168.12.1

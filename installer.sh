@@ -1,7 +1,10 @@
 #!/bin/bash
 
-read -r -s -p "Enter a sudo password: " password
-echo ""
+# checking user is root or used sudo
+if [[ $(whoami) != root ]]; then
+    read -r -s -p "Enter a sudo password: " password
+    echo ""
+fi
 column -t -s "," column.txt
 
 echo "The all option add all services, but adding a number before/after all will not include that service"
@@ -9,23 +12,23 @@ read -p "Pick a service: " -ra service
 
 # Function Installing DHCP
 function dhcp_call(){
-    sudo -S <<< $password apt install -y isc-dhcp-server
+    if [[ $(ls /etc | grep dhcp | wc -l ) -eq 0 ]]; then
+    #if [[ $(systemctl is-active isc-dhcp-server ) == "inactive" ]]; then
+        sudo -S <<< $password apt install -y isc-dhcp-server
+        sudo -S <<< $password systemctl start isc-dhcp-server
+        sudo -S <<< $password systemctl enable isc-dhcp-server
+        clear
 
-    sudo -S <<< $password systemctl start isc-dhcp-server
-    sudo -S <<< $password systemctl enable isc-dhcp-server
-
-    clear
-
-    echo "$( ip addr )"
-    read -p "Pick a interface: " interface
+        echo "$( ip addr )"
+        read -p "Pick a interface: " interface
+        sudo -S <<< $password sed -i s/\"\"/\"$interface\"/g /etc/default/isc-dhcp-server
+        sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
+        sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
+    fi
 
     read -p "Enter a IP address and mask: " network 
     network=$( echo $network | sed 's/\// /g')
     read -ra network <<< "$network"
-
-    sudo -S <<< $password sed -i s/\"\"/\"$interface\"/g /etc/default/isc-dhcp-server
-    sudo -S <<< $password mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.backup
-    sudo -S <<< $password cp DHCP/dhcp.txt /etc/dhcp/dhcpd.conf
 
     network_host=$( bash Scripts/network.sh ${network[1]} ${network[0]})
     sudo -S <<< $password sed -i s/subnet!/$network_host/g /etc/dhcp/dhcpd.conf
@@ -54,18 +57,19 @@ function dhcp_call(){
     sudo -S <<< $password systemctl restart isc-dhcp-server
     sudo -S <<< $password systemctl status isc-dhcp-server
     
-    sleep 5
-    
     clear
 }
 # Function Installing Samba
 function samba_call(){
-    sudo -S <<< $password apt install -y samba
-    sudo -S <<< $password mv /etc/samba/smb.conf /etc/samba/smb.conf.backup
-    sudo -S <<< $password cp SAMBA/samba.txt /etc/samba/smb.conf
-
-    clear
-
+    if [[ $(ls /etc | grep samba | wc -l) -eq 0 ]]; then
+    #if [[ (systemctl is-active smbd ) == "inactive"]]; then
+        sudo -S <<< $password apt install -y samba
+        sudo -S <<< $password mv /etc/samba/smb.conf /etc/samba/smb.conf.backup
+        sudo -S <<< $password cp SAMBA/samba.txt /etc/samba/smb.conf
+        sudo -S <<< $password systemctl enable smbd
+        clear
+    fi
+    
     read -p "How many smb-folder do you want?: " smb_folder
 
     for (( i= 0; i < $smb_folder; i++ )); do
@@ -89,51 +93,75 @@ function samba_call(){
     done
 
     sudo -S <<< $password systemctl restart smbd
-    sudo -S <<< $password systemctl enable smbd
     sudo -S <<< $password systemctl status smbd
 
-    sleep 5
     clear
 }
 # Function Installing DNS 
 function dns_call(){
-    sudo -S <<< $password apt install -y bind9 dnsutils
-    sudo -S <<< $password systemctl enable bind9
-    sudo -S <<< $password systemctl start bind9
+    # is dns services installed?
+    if [[ $(systemctl is-active bind9) == 'inactive' ]]; then
+        sudo -S <<< $password apt install -y bind9 dnsutils
+        sudo -S <<< $password systemctl enable bind9
+        sudo -S <<< $password systemctl start bind9
+        sudo -S <<< $password mkdir -p /etc/bind/dns-zones
+        clear
 
-    sudo -S <<< $password mkdir -p /etc/bind/dns-zones
+        cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.options
 
-    clear
-
-    cat DNS/dns.option.txt | sudo tee /etc/bind/named.conf.options
-
-    read -p "Enter a IP address and mask who allowed to use querys: " network 
-    sudo -S <<< $password sed -i "s/ip_address!/$network/g" /etc/bind/named.conf.options
-    read -p "Enter a forwarding dns server address: " dns_forward
-    sudo -S <<< $password sed -i "s/dns_forward!/$dns_forward/g" /etc/bind/named.conf.options
+        read -p "Enter a IP address and mask who allowed to use querys: " network
+        network1=$( echo $network | sed 's/\//\\\//g') 
+        sudo -S <<< $password sed -i "s/ip_address!/$network1/g" /etc/bind/named.conf.options
+        read -p "Enter a forwarding dns server address: " dns_forward
+        sudo -S <<< $password sed -i "s/dns_forward!/$dns_forward/g" /etc/bind/named.conf.options
     
-    network=$( echo $network | sed 's/\// /g')
-    read -ra network <<< "$network"
+        network=$( echo $network | sed 's/\// /g')
+        read -ra network <<< "$network"
 
-    cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
-    reverse_loc=$( bash Scripts/reverse.sh ${network[0]})
-    sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
+        cat DNS/dns.localrev.txt | sudo tee -a /etc/bind/named.conf.local
+        reverse_loc=$( bash Scripts/reverse.sh ${network[0]})
+        sudo -S <<< $password sed -i "s/localrev!/$reverse_loc/g" /etc/bind/named.conf.local
+    fi
 
-    read -p "Enter a domain name/s: " -ra domain_name
+    while [[ $pick != 'quit' ]]; do
+        read -p "Do you want a domain, a record or quit?: " pick
+        if [[ $pick == 'domain' || $(ls /etc/bind/dns-zones | wc -l) -eq 0 ]]; then
+        	read -p "Enter a domain name/s: " -ra domain_name
 
-    for i in "${domain_name[@]}"; do
-        cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
-        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/named.conf.local
+           	for i in "${domain_name[@]}"; do
+                	cat DNS/dns.localfor.txt | sudo tee -a /etc/bind/named.conf.local
+        	        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/named.conf.local
+                	sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
+        	        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i      
+        	done
+        elif [[ $pick == 'record' && $(ls /etc/bind/dns-zones | wc -l) -ne 0]]; then
+        	ls /etc/bind/dns-zones
+        	read -p "Enter a domain name/s: " domain_name
+        	while [[ $continue != no ]];do
+        		cat DNS/record.txt | sudo -S <<< $password tee -a /etc/dns-zones/$domain_name
 
-        sudo -S <<< $password cp DNS/forward.txt /etc/bind/dns-zones/$i
-        sudo -S <<< $password sed -i "s/@.loc/$i/g" /etc/bind/dns-zones/$i
-        
-        if [[ ! -e "/etc/bind/dns-zones/$reverse_loc-rev" ]]; then
-            sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/$reverse_loc-rev
-            sudo -S <<< $password sed -i "s/@.loc/${domain_name[0]}/g" /etc/bind/dns-zones/$reverse_loc-rev
-            sudo -S <<< $password sed -i s/localrev!/$reverse_loc/g /etc/bind/dns-zones/$reverse_loc-rev
+        		# Entering a sub-domain record
+        		read -p "Enter a domain name: " dnsname
+        		sudo -S <<< $password sed -i "s/dns_name!/$dnsname/g" /etc/bind/dns-zones/$domain_name
+    
+        		# Giving sub-domain ip address
+        		read -p "Enter a ip address for domain name: " dnsip
+        		sudo -S <<< $password sed -i "s/dns_ip!/$dnsip/g" /etc/bind/dns-zones/$domain_name
+    
+        		read -p "Do you want add a other record: " continue
+        	done
+        else 
+            echo "Error you enter invalid option"
         fi
     done
+
+    if [[ ! -e "/etc/bind/dns-zones/$reverse_loc-rev" ]]; then
+        ls /etc/bind/dns-zones
+    	read -p "Enter a domain name/s: " domain_name
+    	sudo -S <<< $password cp DNS/reverse.txt /etc/bind/dns-zones/$reverse_loc-rev
+            sudo -S <<< $password sed -i "s/@.loc/$domain_name/g" /etc/bind/dns-zones/$reverse_loc-rev
+            sudo -S <<< $password sed -i s/localrev!/$reverse_loc/g /etc/bind/dns-zones/$reverse_loc-rev
+    fi
 
     sudo -S <<< $password systemctl restart bind9
     sudo -S <<< $password systemctl status bind9 
@@ -150,7 +178,10 @@ function web_call(){
         sudo -S <<< $password sed -i s/site_name!/$i/g /var/www/$i/index.html
     done    
     if [ $web_server == "apache" ]; then
-        sudo -S <<< $password apt install -y apache2
+        #if [[ $(systemctl is-active apache2) == 'inactive' ]]; then
+        if [[ $(ls /etc | grep apache2 | wc -l ) -eq 0 ]]; then
+             sudo -S <<< $password apt install -y apache2
+        fi
 
         for i in "${domain_name[@]}"; do
             sudo -S <<< $password cp WEB/apache.txt /etc/apache2/sites-available/$i.conf
@@ -166,10 +197,10 @@ function web_call(){
         clear
 
     elif [ $web_server == "nginx" ]; then
-        sudo -S <<< $password apt install -y nginx
-        sudo -S <<< $password ufw app list
-        sudo -S <<< $password ufw allow 'Nginx HTTP'
-        sudo -S <<< $password ufw status
+        #if [[ $(systemctl is-active nginx) == 'inactive' ]]; then
+        if [[ $(ls /etc | grep nginx | wc -l ) -eq 0 ]]; then
+            sudo -S <<< $password apt install -y nginx
+        fi
 
         for i in "${domain_name[@]}"; do
             sudo -S <<< $password cp WEB/nginx.txt /etc/nginx/sites-available/$i
